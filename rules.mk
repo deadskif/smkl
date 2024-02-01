@@ -8,6 +8,10 @@ ifeq ($(MODULES),)
 $(error Empty modules list)
 endif
 
+INSTALL ?= install -D
+INSTALL_PROGRAM = $(INSTALL)
+INSTALL_DATA = $(INSTALL) -m 0644
+
 OBJS :=
 LIBS =
 BINS =
@@ -15,7 +19,9 @@ BINS =
 CFLAGS += $(addprefix -I,$(INCLUDE_DIRS))
 LDFLAGS += $(addprefix -L,$(LINK_DIRS))
 
+# ###
 # Rules
+# ###
 %.d : %.c
 	$(COMPILE.c) -M -MT $@ -MF $@ -MMD $<
 
@@ -29,6 +35,9 @@ LDFLAGS += $(addprefix -L,$(LINK_DIRS))
 #%:
 #	$(LINK.o) $(filter %.o,$^) $(LDLIBS) -o $@
 
+# ###
+# Defines
+# ###
 define make-objs
 $1_OBJS = $(addprefix $(MODULE),$2)
 
@@ -42,36 +51,60 @@ $$($1):
 	$$(LINK.o) -L${MODULE} $3 $$(filter %.o,$$^) $$(LDLIBS) $(addprefix -l,$2) -o $$@
 endef
 
+define make-install
+.PHONY: install-$1
+install-$1: $$($1)
+	$$($2) $$($1) $$($3)/$$(notdir $$($1))
+install: install-$1
+endef
+
+# Make binary
 define make-binary
 $1 = $(MODULE)$1
-$(call make-objs,$1,$2,$3)
-
-all: $$($1)
-
 BINS += $$($1)
 
+all: $$($1)
+$(call make-objs,$1,$2,$3)
 $(call make-link,$1,$3)
+$(call make-install,$1,INSTALL_PROGRAM,bindir)
 endef
 
+# Make static library
 define make-static-library
 $1 = $(MODULE)lib$1.a
-$(call make-objs,$1,$2,$3)
-
 LIBS += $$($1)
+
+$(call make-objs,$1,$2,$3)
+$(call make-install,$1,INSTALL_DATA,libdir)
+
 endef
 
+# Make shared library
 define make-shared-library
 $1 = $(MODULE)lib$1.so
-$(call make-objs,$1,$2,$3)
+LIBS += $$($1)
 
 all: $$($1)
-
-LIBS += $$($1)
-$$($1_OBJS): CFLAGS += -fpic
-
+$(call make-objs,$1,$2,$3)
 $(call make-link,$1,$3,-shared)
+$(call make-install,$1,INSTALL_PROGRAM,libdir)
+
+$$($1_OBJS): CFLAGS += -fpic
 endef
 
+
+# ###
+# Default dirs/prefixes
+# ###
+prefix = /usr/local
+exec_prefix = $(prefix)
+bindir = $(DESTDIR)$(exec_prefix)/bin
+sbindir = $(DESTDIR)$(exec_prefix)/sbin
+libdir = $(DESTDIR)$(exec_prefix)/lib
+
+# ###
+# Goals
+# ###
 all:
 
 include $(addsuffix /$(MODULE_MK),$(MODULES))
