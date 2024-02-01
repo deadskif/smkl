@@ -1,0 +1,2 @@
+$(eval $(call make-shared-library,test_lib,tlib0.o tlib1.o,z))
+$(test_lib): CFLAGS += -DTEST_LIB=1
