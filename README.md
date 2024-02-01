@@ -1,0 +1,3 @@
+# smkl
+
+Simple make lib
