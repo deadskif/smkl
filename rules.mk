@@ -19,11 +19,14 @@ BINS =
 CFLAGS += $(addprefix -I,$(INCLUDE_DIRS))
 LDFLAGS += $(addprefix -L,$(LINK_DIRS))
 
+#DEPSFLAG = -M -MT $@ -MT $(@:.d=.o) -MF $@ -MMD $<
+CFLAGS += -MT $@ -MT $(@:.o=.d) -MF $(@:.o=.d) -MD -MP
 # ###
 # Rules
 # ###
-%.d : %.c
-	$(COMPILE.c) -M -MT $@ -MF $@ -MMD $<
+#%.d : %.c
+#	$(COMPILE.c) -M -MT $@ -MT $(@:.d=.o) -MF $@ -MMD $<
+
 
 %.a:
 	$(AR) $(ARFLAGS) $@ $(filter %.o,$^)
@@ -117,5 +120,5 @@ clean:
 	rm -rf $(BINS) $(LIBS)
 
 ifneq ($(MAKECMDGOALS),clean)
-include $(OBJS:.o=.d)
+-include $(OBJS:.o=.d)
 endif
