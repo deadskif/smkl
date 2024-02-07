@@ -16,18 +16,17 @@ OBJS :=
 LIBS =
 BINS =
 
-CFLAGS += $(addprefix -I,$(INCLUDE_DIRS))
+CFLAGS += $(addprefix -I,$(INCLUDE_DIRS) $(INCLUDE_C_DIRS))
+CXXFLAGS += $(addprefix -I,$(INCLUDE_DIRS) $(INCLUDE_CXX_DIRS))
 LDFLAGS += $(addprefix -L,$(LINK_DIRS))
 
-#DEPSFLAG = -M -MT $@ -MT $(@:.d=.o) -MF $@ -MMD $<
-CFLAGS += -MT $@ -MT $(@:.o=.d) -MF $(@:.o=.d) -MD -MP
+DEPSFLAGS = -MT $@ -MT $(@:.o=.d) -MF $(@:.o=.d) -MD -MP
+CFLAGS += $(DEPSFLAGS)
+CXXFLAGS += $(DEPSFLAGS)
+
 # ###
 # Rules
 # ###
-#%.d : %.c
-#	$(COMPILE.c) -M -MT $@ -MT $(@:.d=.o) -MF $@ -MMD $<
-
-
 %.a:
 	$(AR) $(ARFLAGS) $@ $(filter %.o,$^)
 	$(RANLIB) $@
