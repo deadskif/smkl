@@ -1,0 +1,4 @@
+$(eval $(call make-binary,test_subbin,$(addprefix src/,subbin.o)))
+
+$(test_subbin): INCLUDE_DIRS += $(MODULE)/include
+$(test_subbin_OBJS): CFLAGS += -DSUBBIN=1

@@ -1,4 +1,4 @@
-MODULES = bin lib
+MODULES = bin lib submodules/subbin
 
 
 TOPDIR := $(CURDIR)
