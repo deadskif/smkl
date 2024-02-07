@@ -41,7 +41,7 @@ CXXFLAGS += $(DEPSFLAGS)
 # Defines
 # ###
 define make-objs
-$1_OBJS = $(addprefix $(MODULE),$2)
+$1_OBJS = $(addprefix $(MODULE),$(filter-out /%,$2)) $(filter /%,$2)
 
 OBJS += $$($1_OBJS)
 
@@ -95,6 +95,7 @@ $(call make-link,$1,$3,-shared)
 $(call make-install,$1,INSTALL_PROGRAM,libdir)
 
 $$($1_OBJS): CFLAGS += -fpic
+$$($1_OBJS): CXXFLAGS += -fpic
 endef
 
 

@@ -2,7 +2,7 @@
 $(eval $(call make-binary,test_bin,bin.o,m test_lib test_static_lib))
 $(test_bin_OBJS): CFLAGS += -DTEST_BIN=1
 
-$(eval $(call make-static-library,test_static_lib,tslib0.o tslib1.o))
+$(eval $(call make-static-library,test_static_lib,tslib0.o $(TOPDIR)/$(MODULE)/tslib1.o))
 $(test_static_lib_OBJS): CFLAGS += -DTEST_STATIC_LIBRARY=1
 
 $(test_bin): $(test_static_lib)
