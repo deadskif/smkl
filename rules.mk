@@ -1,9 +1,9 @@
 .PHONY: all clean
 RANLIB ?= ranlib
 
-MODULE = $(dir $(lastword $(MAKEFILE_LIST)))
 MODULE_MK ?= Makefile.in
-#CC = $(CROSS_COMPILE)gcc
+MODULE = $(dir $(lastword $(filter %/$(MODULE_MK),$(MAKEFILE_LIST))))
+
 ifeq ($(MODULES),)
 $(error Empty modules list)
 endif
@@ -52,7 +52,10 @@ $$($1):
 endef
 
 define make-install
-.PHONY: install-$1
+.PHONY: $1 install-$1
+
+$1: $$($1)
+
 install-$1: $$($1)
 	$$($2) $$($1) $$($3)/$$(notdir $$($1))
 install: install-$1
