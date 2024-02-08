@@ -102,7 +102,7 @@ endef
 # ###
 # Default dirs/prefixes
 # ###
-prefix = /usr/local
+prefix ?= /usr/local
 exec_prefix = $(prefix)
 bindir = $(DESTDIR)$(exec_prefix)/bin
 sbindir = $(DESTDIR)$(exec_prefix)/sbin
