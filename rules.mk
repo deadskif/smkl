@@ -2,14 +2,6 @@
 RANLIB ?= ranlib
 
 MODULE_MK ?= Makefile.in
-_LAST_MODULE = $(dir $(lastword $(filter %/$(MODULE_MK),$(MAKEFILE_LIST))))
-_GET_MODULE = $(strip $(foreach mod,$(MODULES),$(if $(filter $(mod)%,$1),$(mod))))
-
-MODULE = $(if $(@D),$(call _GET_MODULE,$(@D)),$(_LAST_MODULE))
-
-ifeq ($(MODULES),)
-$(error Empty modules list)
-endif
 
 INSTALL ?= install -D
 INSTALL_PROGRAM = $(INSTALL)
@@ -34,11 +26,6 @@ CXXFLAGS += $(DEPSFLAGS)
 	$(AR) $(ARFLAGS) $@ $(filter %.o,$^)
 	$(RANLIB) $@
 
-#%.so:
-#	$(LINK.o) -shared $(filter %.o,$^) $(LDLIBS) -o $@
-
-#%:
-#	$(LINK.o) $(filter %.o,$^) $(LDLIBS) -o $@
 
 # ###
 # Defines
@@ -49,17 +36,22 @@ $1_OBJS = $(addprefix $(MODULE),$(filter-out /%,$2)) $(filter /%,$2)
 OBJS += $$($1_OBJS)
 
 $$($1): $$($1_OBJS)
+$$($1): MODULE := $(if $(MODULE),$(MODULE),./)
 endef
 
 define make-link
 $$($1):
-	$$(LINK.o) -L${MODULE} $3 $$(filter %.o,$$^) $$(LDLIBS) $(addprefix -l,$2) -o $$@
+	$$(LINK.o) $(if $(MODULE),-L$(MODULE)) $3 $$(filter %.o,$$^) $$(LDLIBS) $(addprefix -l,$2) -o $$@
 endef
 
-define make-install
-.PHONY: $1 install-$1
 
+define make-install
+ifneq ($1,$$($1))
+.PHONY: $1
 $1: $$($1)
+endif
+
+.PHONY: install-$1
 
 install-$1: $$($1)
 	$$($2) $$($1) $$($3)/$$(notdir $$($1))
@@ -84,7 +76,6 @@ LIBS += $$($1)
 
 $(call make-objs,$1,$2,$3)
 $(call make-install,$1,INSTALL_DATA,libdir)
-
 endef
 
 # Make shared library
@@ -116,7 +107,11 @@ libdir = $(DESTDIR)$(exec_prefix)/lib
 # ###
 all:
 
-include $(addsuffix /$(MODULE_MK),$(MODULES))
+
+define INCLUDE_FILE
+include $(MODULE)$(MODULE_MK)
+endef
+$(foreach MODULE,$(addsuffix /,$(MODULES)),$(eval $(INCLUDE_FILE)))
 
 clean:
 	rm -rf $(OBJS) $(OBJS:.o=.d)
