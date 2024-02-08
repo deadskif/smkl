@@ -2,7 +2,10 @@
 RANLIB ?= ranlib
 
 MODULE_MK ?= Makefile.in
-MODULE = $(dir $(lastword $(filter %/$(MODULE_MK),$(MAKEFILE_LIST))))
+_LAST_MODULE = $(dir $(lastword $(filter %/$(MODULE_MK),$(MAKEFILE_LIST))))
+_GET_MODULE = $(strip $(foreach mod,$(MODULES),$(if $(filter $(mod)%,$1),$(mod))))
+
+MODULE = $(if $(@D),$(call _GET_MODULE,$(@D)),$(_LAST_MODULE))
 
 ifeq ($(MODULES),)
 $(error Empty modules list)

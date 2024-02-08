@@ -7,15 +7,15 @@ Simple make lib
 
 ## In your Makefile
 
-> `MODULES = ` modules list  
-> `MODULE_MK = ` module makefile name. default `Makefile.in`  
+> `MODULES = ` Modules list  
+> `MODULE_MK = ` Module makefile name. Default `Makefile.in`  
 >  
 > `TOPDIR := $(CURDIR)`  
-> `MKRULES := ` path to rules.mk  
+> `MKRULES := ` Path to rules.mk  
 > `DESTDIR := `  
 >  
-> `INCLUDE_DIRS += ` include dirs  
-> `LINK_DIRS += ` library  
+> `INCLUDE_DIRS += ` Include dirs  
+> `LINK_DIRS += ` Library search directories  
 >  
 > `CFLAGS += ` Global C compiler flags  
 > `CXXFLAGS += ` Global C++ compiler flags  
