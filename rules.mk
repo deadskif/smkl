@@ -1,7 +1,13 @@
 .PHONY: all clean
-RANLIB ?= ranlib
 
 MODULE_MK ?= Makefile.in
+
+RANLIB ?= ranlib
+
+ifneq ($(CROSS_COMPILE),)
+CC = $(CROSS_COMPILE)gcc
+CXX = $(CROSS_COMPILE)g++
+endif
 
 INSTALL ?= install -D
 INSTALL_PROGRAM = $(INSTALL)
@@ -10,6 +16,10 @@ INSTALL_DATA = $(INSTALL) -m 0644
 OBJS :=
 LIBS =
 BINS =
+
+ifneq ($(SYSROOT),)
+TARGET_ARCH += --sysroot=$(SYSROOT)
+endif
 
 CFLAGS += $(addprefix -I,$(INCLUDE_DIRS) $(INCLUDE_C_DIRS))
 CXXFLAGS += $(addprefix -I,$(INCLUDE_DIRS) $(INCLUDE_CXX_DIRS))
