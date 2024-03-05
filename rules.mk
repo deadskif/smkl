@@ -57,8 +57,9 @@ endef
 # $(2): libraries list
 define make-link
 $$($1):
-	$$(LINK.o) $$(filter %.o,$$^) $$(LDLIBS) $(addprefix -l,$2) -o $$@
+	$$(LINK.o) $$(filter %.o,$$^) $$(LDLIBS) -o $$@
 $$($1): private LINK_DIRS += $(if $(MODULE),$(MODULE))
+$$($1): private LDLIBS += $2
 endef
 
 # make-install
@@ -130,6 +131,7 @@ exec_prefix = $(prefix)
 bindir = $(DESTDIR)$(exec_prefix)/bin
 sbindir = $(DESTDIR)$(exec_prefix)/sbin
 libdir = $(DESTDIR)$(exec_prefix)/lib
+includedir = $(DESTDIR)$(prefix)/include
 
 # ###
 # Goals

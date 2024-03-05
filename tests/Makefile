@@ -10,6 +10,7 @@ LINK_DIRS += lib
 
 CFLAGS += -O2
 CFLAGS += -Wall -Werror
+CXXFLAGS += -O2 -Wall -Wextra
 #LDFLAGS += -Wl,-rpath=$(TOPDIR)/lib
 LDFLAGS += -Wl,-rpath=$(DESTDIR)/usr/local/lib
 
