@@ -12,6 +12,7 @@ endif
 INSTALL ?= install -D
 INSTALL_PROGRAM ?= $(INSTALL)
 INSTALL_DATA ?= $(INSTALL) -m 0644
+SYMLINK ?= ln -sf
 
 OBJS :=
 LIBS =
@@ -28,6 +29,9 @@ LDFLAGS += $(addprefix -L,$(LINK_DIRS))
 CPPFLAGS += -MT $@ -MT $(@:.o=.d) -MF $(@:.o=.d) -MD -MP
 
 SHAREDFLAGS ?= -fPIC
+LIBPREFIX ?= lib
+SHAREDLIBSUFFIX ?= .so
+STATICLIBSUFFIX ?= .a
 # ###
 # Rules
 # ###
@@ -57,7 +61,10 @@ endef
 # $(2): libraries list
 define make-link
 $$($1):
-	$$(LINK.o) $$(filter %.o,$$^) $$(LDLIBS) -o $$@
+	$$(LINK.o) $$(filter %.o,$$^) $$(addprefix -l,$$(LDLIBS)) -o $$@
+	$$(if $$($1_SYMLINKS),for i in $$($1_SYMLINKS); do \
+		$(SYMLINK) $$($1_VERNAME) $$$$i; \
+	done)
 $$($1): private LINK_DIRS += $(if $(MODULE),$(MODULE))
 $$($1): private LDLIBS += $2
 endef
@@ -84,7 +91,8 @@ endef
 # $(2): objects list
 # $(3): libraries list
 define make-binary
-$1 = $(MODULE)$1
+$1_NAME ?= $$($1_PREFIX)$1$$($1_SUFFIX)
+$1 = $(MODULE)$$($1_NAME)
 BINS += $$($1)
 
 all: $$($1)
@@ -97,7 +105,11 @@ endef
 # $(1): name
 # $(2): objects list
 define make-static-library
-$1 = $(MODULE)lib$1.a
+$1_PREFIX ?= $(LIBPREFIX)
+$1_SUFFIX ?= $(STATICLIBSUFFIX)
+$1_NAME ?= $$($1_PREFIX)$1$$($1_SUFFIX)
+$1 = $(MODULE)$$($1_NAME)
+
 LIBS += $$($1)
 
 $(call make-objs,$1,$2)
@@ -108,8 +120,19 @@ endef
 # $(1): name
 # $(2): objects list
 # $(3): libraries list
+# $(4): SO version
+# $(5): version
 define make-shared-library
-$1 = $(MODULE)lib$1.so
+$1_PREFIX ?= $(LIBPREFIX)
+$1_SUFFIX ?= $(SHAREDLIBSUFFIX)
+$1_NAME ?= $$($1_PREFIX)$1$$($1_SUFFIX)
+$1_SOVERSION ?= $4
+$1_VERSION ?= $5
+$1_SONAME ?= $$($1_NAME)$$(if $$($1_SOVERSION),.$$($1_SOVERSION))
+$1_VERNAME ?= $$(if $$($1_VERSION),$$($1_NAME).$$($1_VERSION),$$($1_SONAME))
+$1_SYMLINKS = $$(filter-out $$($1),$(MODULE)$$($1_SONAME) $(MODULE)$$($1_NAME))
+$1 = $(MODULE)$$($1_VERNAME)
+
 LIBS += $$($1)
 
 all: $$($1)
@@ -119,7 +142,8 @@ $(call make-install,$1,INSTALL_PROGRAM,libdir)
 
 $$($1_OBJS): CFLAGS += $(SHAREDFLAGS)
 $$($1_OBJS): CXXFLAGS += $(SHAREDFLAGS)
-$$($1): private LDFLAGS += -shared
+$$($1): private LDFLAGS += -shared -Wl,-soname=$$(if \
+	$$(SONAME),$$(SONAME),$$($1_SONAME))
 endef
 
 
