@@ -83,6 +83,9 @@ endif
 
 install-$1: $$($1)
 	$$($2) $$($1) $$($3)/$$(notdir $$($1))
+	$$(if $$($1_SYMLINKS),for i in $$($1_SYMLINKS); do \
+		echo $$($2) $$$$i $$($3)/$$(notdir $$($1)); \
+	done)
 install: install-$1
 endef
 
@@ -111,7 +114,7 @@ $1_NAME ?= $$($1_PREFIX)$1$$($1_SUFFIX)
 $1 = $(MODULE)$$($1_NAME)
 
 LIBS += $$($1)
-
+all: $$($1)
 $(call make-objs,$1,$2)
 $(call make-install,$1,INSTALL_DATA,libdir)
 endef
